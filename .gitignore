@@ -1,0 +1,70 @@
+#settings
+.settings/
+
+#metadata
+.metadata/
+
+#Debug
+Debug/
+debug/
+Release/
+release
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Build output directories
+/Debug/
+/Release/
+
+# Eclipse/STM32CubeIDE specific files
+.metadata/
+.settings/
+.project
+.cproject
+.mxproject
+*.launch
+
+# Generated files
+*.elf
+*.map
+*.su
+*.srec
+*.lst
+*.o
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.bin
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
