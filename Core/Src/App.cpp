@@ -1,48 +1,44 @@
 #include "App.h"
 #include "stm32f4xx.h"
 #include "spi.h"
+#include "mcp2515.h" // Ensure this includes your register definitions
 
-// --- LED CLASS  ---
-class Led {
-public:
-    void init() {
-        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-        GPIOA->MODER &= ~GPIO_MODER_MODE5;
-        GPIOA->MODER |= GPIO_MODER_MODE5_0;
-    }
-    void on()  { GPIOA->ODR |= GPIO_ODR_OD5; }
-    void off() { GPIOA->ODR &= ~GPIO_ODR_OD5; }
-};
+// --- LED Helper ---
+void led_init() {
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+    GPIOA->MODER &= ~GPIO_MODER_MODE5;
+    GPIOA->MODER |= GPIO_MODER_MODE5_0;
+}
+void led_toggle() { GPIOA->ODR ^= GPIO_ODR_OD5; }
+void led_off() { GPIOA->ODR &= ~GPIO_ODR_OD5; }
 
-// --- THE NEW MAIN ---
+// --- MAIN ---
 void App_Main(void) {
-    Led statusLed;
-    statusLed.init();
-
-    // 1. Initialize the Nervous System
+    led_init();
     SPI::init();
 
-    while (1) {
-        // 2. The Loopback Test
-        // We pull CS Low (Select), send 'A', and pull CS High (Deselect)
-        SPI::csSelect(true);
-        uint8_t received = SPI::transfer(0x41); // 0x41 is 'A'
-        SPI::csSelect(false);
+    Mcp2515 can;
+    can.reset();
 
-        // 3. The Verdict
-        if (received == 0x41) {
-            // SUCCESS: Blink FAST (The wire is connected!)
-            // Toggle Speed: ~50ms
-            statusLed.on();
-            for (volatile int i = 0; i < 50000; i++);
-            statusLed.off();
+    // 1. Switch to Loopback Mode
+    // Register: CANCTRL (0x0F)
+    // Mask: 0xE0 (Top 3 bits control the mode)
+    // Value: 0x40 (Loopback Mode pattern)
+    can.modifyRegister(REG_CANCTRL, 0xE0, 0x40);
+
+    while (1) {
+        // 2. Read Status
+        uint8_t status = can.readRegister(REG_CANSTAT);
+
+        // 3. Check if we are in Loopback Mode (0x40)
+        // Note: We mask with 0xE0 to ignore other read-only flags
+        if ((status & 0xE0) == 0x40) {
+            // SUCCESS: Fast Blink (We are in Loopback!)
+            led_toggle();
             for (volatile int i = 0; i < 50000; i++);
         } else {
-            // FAIL: Blink SLOW (The wire is missing!)
-            // Toggle Speed: ~500ms
-            statusLed.on();
-            for (volatile int i = 0; i < 500000; i++);
-            statusLed.off();
+            // FAIL: Slow Blink (Still in Config 0x80 or Error)
+            led_toggle();
             for (volatile int i = 0; i < 500000; i++);
         }
     }

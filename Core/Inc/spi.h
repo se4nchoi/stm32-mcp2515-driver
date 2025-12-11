@@ -10,7 +10,7 @@ public:
 	// byte out, byte in
 	static uint8_t transfer(uint8_t data);
 
-	// TRUE (low) = select; False (high) = Deselect
+	// TRUE (low) = active; False (high) = inactive
 	static void csSelect(bool state);
 };
 

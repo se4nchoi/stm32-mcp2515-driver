@@ -18,7 +18,6 @@ void SPI::init() {
 	// PB6 (CS) -> output mode (01)
 	GPIOB->MODER &= ~(3 << 6*2); 	// clear
 	GPIOB->MODER |= (1 << 6*2);		// set to 01; * no need to set AFR
-	GPIOB->ODR	 |= (1 << 3*2);		// set to inactive (high)
 
 	// 3. set AFR
 	// AF5 (SPI1) = 5 (0101)
@@ -33,6 +32,9 @@ void SPI::init() {
 				 (1 << 9) |  // SSM (Software Slave Management)
 				 (1 << 8) |  // SSI (Internal Slave Select)
 				 (1 << 6);   // SPE (Enable)
+
+	// initially set CS as inactive (high)
+	csSelect(false);
 }
 
 uint8_t SPI::transfer(uint8_t data) {
