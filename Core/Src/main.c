@@ -1,10 +1,10 @@
 #include "main.h"
-#include "App.h" // <--- Add this
+#include "App.h"
 
 int main(void) {
-  // Jump straight to C++ world
+  // Jump straight to C++
   App_Main();
 
-  // We should never get here
   while (1);
+  return 0;
 }

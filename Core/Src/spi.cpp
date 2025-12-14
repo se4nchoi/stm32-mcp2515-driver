@@ -1,12 +1,12 @@
 #include <spi.h>
 
 void SPI::init() {
-	// 1. enable clocks
+	// CLOCK
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 
-	// 2. configure GPIO pins
+	// GPIO CONFIG
 
 	// PA6 PA7 (MISO MOSI) + PB3 (SCK)
 	GPIOA->MODER &= ~((3 << 6*2) | (3 << 7*2)); // clear
@@ -19,14 +19,14 @@ void SPI::init() {
 	GPIOB->MODER &= ~(3 << 6*2); 	// clear
 	GPIOB->MODER |= (1 << 6*2);		// set to 01; * no need to set AFR
 
-	// 3. set AFR
+	// AFR CONFIG
 	// AF5 (SPI1) = 5 (0101)
 	// PA6, 7 in AFR[0]
 	GPIOA->AFR[0] |= (5 << 6*4) | (5 << 7*4);
 	// PB3 also in AFR[0]
 	GPIOB->AFR[0] |= (5 << 3*4);
 
-	// 4. set SPI peripheral
+	// SPI CONFIG
 	SPI1->CR1 |= (4 << 3) |  // Baud Rate: Div/32
 				 (1 << 2) |  // Master Mode
 				 (1 << 9) |  // SSM (Software Slave Management)
