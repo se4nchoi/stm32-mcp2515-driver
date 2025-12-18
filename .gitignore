@@ -39,6 +39,7 @@ release
 # Build output directories
 /Debug/
 /Release/
+/build/
 
 # Eclipse/STM32CubeIDE specific files
 .metadata/
