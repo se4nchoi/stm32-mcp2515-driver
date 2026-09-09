@@ -8,25 +8,6 @@ I built this as an embedded systems learning project. The current version covers
 ![STM32](https://img.shields.io/badge/MCU-STM32F411-blue)
 ![Protocol](https://img.shields.io/badge/Protocol-SPI%20%2F%20CAN-lightgrey)
 
-## Preview
-
-I plan to add the following once I recreate the hardware setup:
-
-* STM32-to-MCP2515 wiring diagram
-* Hardware photo
-* Loopback test video
-* GoogleTest output
-
-<!--
-![STM32F411 to MCP2515 wiring](docs/stm32-mcp2515-wiring.png)
-
-![STM32F411 and MCP2515 hardware setup](docs/hardware-setup.jpg)
-
-[Watch the loopback validation demo](VIDEO_URL)
-
-![GoogleTest output](docs/gtest-output.png)
--->
-
 ## Implemented
 
 * SPI setup using direct register access
@@ -45,19 +26,20 @@ I plan to add the following once I recreate the hardware setup:
 
 ## Structure
 
+The repository contains two driver paths:
+
+* **Firmware:** `Core/Src/App.cpp` uses the driver in `Core/Src/mcp2515.cpp` and the register-level SPI implementation directly.
+* **Host-side tests:** `Drivers/user_drivers/Src/mcp2515.cpp` accepts an `ISPI` interface, which the tests supply through `MockSPI`.
+
 ```text
-Application
-    ↓
-Mcp2515 driver
-    ↓
-ISPI
-   ↙    ↘
-STM32SPI  MockSPI
+Firmware application                  Host-side tests
+        ↓                                    ↓
+Core Mcp2515 driver                 ISPI-based Mcp2515 driver
+        ↓                                    ↓
+Register-level SPI                        MockSPI
 ```
 
-The MCP2515 driver talks through `ISPI`.
-
-On the board, it uses `STM32SPI`. For host-side tests, it can use `MockSPI` instead.
+The tested driver abstraction is not yet wired into the firmware application.
 
 ## Validation
 
@@ -69,7 +51,9 @@ The original hardware test did the following:
 4. Read the controller status back
 5. Used the STM32 LED to indicate success or failure
 
-The repository also includes an initial test that checks whether `reset()` sends the expected MCP2515 reset command.
+The host-side suite includes tests for sending the reset command and returning register data through a mock SPI transfer. These tests exercise the interface-based driver, not the firmware path.
+
+The original hardware check confirmed controller mode through register readback and LED behavior; it did not transmit or receive a CAN frame. Wiring photos and a recorded hardware demonstration have not been added yet.
 
 ## Development Environment
 
@@ -131,11 +115,9 @@ Run the test executable:
 .\build\Debug\run_tests.exe
 ```
 
-Or run through CTest:
+The executable path above assumes the Visual Studio multi-configuration generator. The current CMake file does not register tests with CTest, so run the executable directly.
 
-```powershell
-ctest --test-dir build -C Debug --output-on-failure
-```
+The CMake paths and C++ include names currently differ in letter case from the checked-in files. The documented Windows setup relies on a case-insensitive filesystem; those paths need correction before building on a case-sensitive filesystem.
 
 ## Limitations
 
@@ -149,13 +131,9 @@ The project does not yet include:
 * Configurable CAN bit timing
 * A documented firmware flashing workflow
 
-## Development Process
+## My Contribution and AI Assistance
 
-This project was built with AI assistance.
-
-I chose the project, assembled the hardware, asked implementation questions, adjusted the generated code, and used the board behavior to check whether the result worked.
-
-I did not independently design every part of the driver or test setup. The project is best understood as a record of my early embedded systems learning rather than fully original driver work.
+I chose the project, assembled the hardware, adjusted AI-generated code, and checked controller-mode behavior using register readback and the board LED. AI assistance supported the driver and test setup; this repository records my early embedded-systems learning and validation work.
 
 ## What I Learned
 
@@ -179,4 +157,4 @@ I did not independently design every part of the driver or test setup. The proje
 
 ## License
 
-No license has been added yet.
+No project-level license has been added yet. Bundled vendor code has its own license files under `Drivers/`.
